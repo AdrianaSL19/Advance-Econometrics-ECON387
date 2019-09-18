@@ -12,8 +12,8 @@ tmp = tmp[:-1, :-1]  # Delete last row and column
 tmp1 = np.reshape(tmp, (40, 10))
 tmp2 = np.tile(tmp, (2, 2)) # generates a 40 by 40 array
 np.linalg.cond(tmp2)  # Calculate condition number of tmp2
-print(np.linalg.inv(tmp2))  # Singular matrix
+# print(np.linalg.inv(tmp2))  # Singular matrix
 tmp2 = np.where(tmp2 <= 0, 0.5, tmp2)   # Change all non positive to 0.5
 tmp2[0, 0] = -tmp2[0, 0]    # set first row/column element to its negative value
-tmp3 = np.log(tmp2) # calculates the natural log of tmp2
-np.argwhere(np.isnan(tmp3)) # Find the indices for NaN values which is [0, 0]
+# tmp3 = np.log(tmp2) # calculates the natural log of tmp2
+# np.argwhere(np.isnan(tmp3)) # Find the indices for NaN values which is [0, 0]
