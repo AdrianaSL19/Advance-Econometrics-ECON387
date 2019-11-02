@@ -1,0 +1,127 @@
+---
+title: "R Notebook"
+author: "Adriana Sham Luo"
+date: "10/23/2019"
+output:
+  word_document: default
+  html_document:
+    df_print: paged
+---
+
+(1) Import all files to R. Use package readr. When reading English 2006 2012 All.csv, you can specify na() option in read csv() to define characters to interpreted as missing.
+```{r}
+library(magrittr)
+pacman::p_load(dplyr)
+rm(list = ls())
+English_2006_2012_All = read.csv("English_2006_2012_All.csv", header = TRUE, sep = ",") 
+e1 = na.omit(English_2006_2012_All)
+str(e1)
+e1 %<>%
+  mutate(Mean.Scale.Score = as.numeric(Mean.Scale.Score)) %>%
+  mutate(Num.Level.1 = as.numeric(Num.Level.1)) %>%
+  mutate(Pct.Level.1 = as.numeric(Pct.Level.1 )) %>%
+  mutate(Num.Level.2 = as.numeric(Num.Level.2)) %>%
+  mutate(Pct.Level.2 = as.numeric(Pct.Level.2 )) %>%
+  mutate(Num.Level.3 = as.numeric(Num.Level.3)) %>%
+  mutate(Pct.Level.3 = as.numeric(Pct.Level.3)) %>%
+  mutate(Num.Level.4 = as.numeric(Num.Level.4)) %>%
+  mutate(Pct.Level.4 = as.numeric(Pct.Level.4)) %>%
+  mutate(Num.Level.3.and.4 = as.numeric(Num.Level.3.and.4)) %>%
+  mutate(Pct.Level.3.and.4 = as.numeric(Pct.Level.3.and.4))
+
+str(e1)
+
+English_2013_2017_All = read.csv("English_2013_2017_All.csv", header = TRUE, sep = ",", na.strings = "NA")
+e2 = na.omit(English_2013_2017_All)
+
+Math_2006_2012_All = read.csv("Math_2006_2012_All.csv", header = TRUE, sep = ",", na.strings = "NA")
+m1 = na.omit(Math_2006_2012_All)
+
+Math_2013_2017_All = read.csv("Math_2013_2017_All.csv", header = TRUE, sep = ",", na.strings = "NA")
+m2 = na.omit(Math_2013_2017_All)
+
+colnames(e1) = c("DBN", "Grade", "Year", "Demographic", "Number.Tested", "Mean.Scale.Score", "Num.Level.1", "Pct.Level.1", "Num.Level.2", "Pct.Level.2", "Num.Level.3", "Pct.Level.3", "Num.Level.4", "Pct.Level.4", "Num.Level.3.and.4", "Pct.Level.3.and.4")
+
+colnames(e2) = c("DBN", "Grade", "Year", "Demographic", "Number.Tested", "Mean.Scale.Score", "Num.Level.1", "Pct.Level.1", "Num.Level.2", "Pct.Level.2", "Num.Level.3", "Pct.Level.3", "Num.Level.4", "Pct.Level.4", "Num.Level.3.and.4", "Pct.Level.3.and.4")
+
+colnames(m1) = c("DBN", "Grade", "Year", "Demographic", "Number.Tested", "Mean.Scale.Score", "Num.Level.1", "Pct.Level.1", "Num.Level.2", "Pct.Level.2", "Num.Level.3", "Pct.Level.3", "Num.Level.4", "Pct.Level.4", "Num.Level.3.and.4", "Pct.Level.3.and.4")
+
+colnames(m2) = c("DBN", "Grade", "Year", "Demographic", "Number.Tested", "Mean.Scale.Score", "Num.Level.1", "Pct.Level.1", "Num.Level.2", "Pct.Level.2", "Num.Level.3", "Pct.Level.3", "Num.Level.4", "Pct.Level.4", "Num.Level.3.and.4", "Pct.Level.3.and.4")
+```
+
+(2) Change the measurements of percent passing variables to ratios by dividing them by 100.
+(3) Append the English score data sets and name it English 2006 2017 all. Similarly append the Math score data sets and name it Math 2006 2017 all.
+```{r}
+English_2006_2017_All = rbind(e1, e2)
+English_2006_2017_All %<>%
+  mutate(Pct.Level.1 = Pct.Level.1/100) %>%
+  mutate(Pct.Level.2 = Pct.Level.2/100) %>%
+  mutate(Pct.Level.3 = Pct.Level.3/100) %>%
+  mutate(Pct.Level.4 = Pct.Level.4/100) %>%
+  mutate(Pct.Level.3.and.4 = Pct.Level.3.and.4/100)
+
+
+Math_2006_2017_All = rbind(m1, m2)
+Math_2006_2017_All %<>%
+  mutate(Pct.Level.1 = Pct.Level.1/100) %>%
+  mutate(Pct.Level.2 = Pct.Level.2/100) %>%
+  mutate(Pct.Level.3 = Pct.Level.3/100) %>%
+  mutate(Pct.Level.4 = Pct.Level.4/100) %>%
+  mutate(Pct.Level.3.and.4 = Pct.Level.3.and.4/100)
+```
+
+(4) Merge English 2006 2017 all and Math 2006 2017 all on DBN, Year and Grade. Name this data set ME 2006 2017 all.
+```{r}
+ME_2006_2017_all = merge(English_2006_2017_All, Math_2006_2017_All, by=c("DBN", "Grade", "Year"), all.x  = T, all.y = T, suffixes = c(".english",".math"))
+
+rm(list=setdiff(ls(), "ME_2006_2017_all"))
+```
+
+(5) Generate a new string variable, borough, by slicing the third character in the DBN column in ME 2006 2017 all.
+```{r}
+ME_2006_2017_all %<>%
+  mutate(borough = substr(DBN, 3,3)) %>%
+  mutate(borough = as.factor(borough))
+```
+
+(6) Generate a table of descriptive statistics for ME 2006 2017 all. You can use package stargazer().
+```{r}
+stargazer::stargazer(ME_2006_2017_all, type = "text")
+```
+
+(7) Grouping by borough, year and grade, obtain mean, standard deviation, min and max of percent passing scores for both types of exam.
+```{r}
+ME_2006_2017_all = ME_2006_2017_all[complete.cases(ME_2006_2017_all), ]
+ME_2006_2017_all %>%
+  group_by(borough, Year, Grade) %>%
+  summarize(mean_english = mean(Pct.Level.3.and.4.english), min_english= min(Pct.Level.3.and.4.english), max_english = max(Pct.Level.3.and.4.english), sd_english = sd(Pct.Level.3.and.4.english), mean_math = mean(Pct.Level.3.and.4.math), min_math= min(Pct.Level.3.and.4.math), max_math = max(Pct.Level.3.and.4.math), sd_math= sd(Pct.Level.3.and.4.math))
+```
+
+(8) Generate a new numeric variable, district, by slicing the first two characters in the DBN column in ME 2006 2017 all.
+```{r}
+ME_2006_2017_all %<>%
+  mutate(district = substr(DBN, 1,2)) %>%
+  mutate(district = as.numeric(district))
+str(ME_2006_2017_all)
+```
+
+(9) Regress percent passing for English scores, on an intercept, year dummies, borough dummies and district dummies.
+```{r}
+year.f = factor(ME_2006_2017_all$Year)
+# year_dummies = model.matrix(~year.f)
+borough.f = factor(ME_2006_2017_all$borough)
+# borough_dummies = model.matrix(~borough.f)
+district.f = factor(ME_2006_2017_all$district)
+# district_dummies = model.matrix(~district.f)
+
+y_english = ME_2006_2017_all$Pct.Level.3.and.4.english
+mod = lm(y_english ~ 1 + year.f + borough.f + district.f)
+summary(mod)
+```
+
+(10) Regress percent passing for Math scores, on an intercept, year dummies, borough dum- mies and district dummies.
+```{r}
+y_math = ME_2006_2017_all$Pct.Level.3.and.4.math
+mod2 = lm(y_math ~ 1 + year.f + borough.f + district.f)
+summary(mod2)
+```
